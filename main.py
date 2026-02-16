@@ -55,3 +55,4 @@ if __name__ == "__main__":
             # Catch any other unexpected errors during the IPv6 check
             print(f"An unexpected error occurred while checking for IPv6: {e}", file=sys.stderr)
         sys.exit(1)
+
