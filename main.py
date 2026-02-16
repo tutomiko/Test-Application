@@ -25,7 +25,7 @@ def get_ipv4_address(domain: str) -> str | None:
             # but is included for completeness.
             return None
     except socket.gaierror:
-        # Handle cases where the domain cannot be resolved at all
+        # Handle cases where the domain cannot be resolved
         return None
     except Exception as e:
         # Catch any other unexpected errors during resolution
