@@ -1,0 +1,26 @@
+# === Sylus: auto-generated cache exclusions ===
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+node_modules/
+.next/
+.nuxt/
+.cache/
+.parcel-cache/
+.turbo/
+.sass-cache/
+target/
+.gradle/
+*.class
+.DS_Store
+Thumbs.db
