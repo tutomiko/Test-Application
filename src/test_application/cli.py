@@ -1,57 +1,44 @@
 import argparse
-import socket
 import sys
-
-def check_http_status(target: str, port: int) -> str:
-    """Checks if a service is running on the target host and port."""
-    try:
-        with socket.create_connection((target, port), timeout=2):
-            return "yarp"
-    except (socket.gaierror, socket.timeout, ConnectionRefusedError):
-        return "narp"
+import random
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="A simple CLI tool for domain resolution and IP generation."
-    )
-    parser.add_argument(
-        "action",
-        nargs="?",
-        default="help",
-        help="Action to perform: domain (resolve domain), rand (generate random IP), or target (check service availability)."
-    )
-    parser.add_argument(
-        "value",
-        nargs="?",
-        help="Value for the action (e.g., domain name for 'domain' action, or target host for 'target' action)."
-    )
-    parser.add_argument(
-        "--target",
-        type=str,
-        help="Target host to check for HTTP/HTTPS service availability."
-    )
+    parser = argparse.ArgumentParser(description="A test application with various commands.")
+    subparsers = parser.add_subparsers(dest="action", help="Available actions")
+
+    # Domain command
+    domain_parser = subparsers.add_parser("domain", help="Process a domain name")
+    domain_parser.add_argument("name", type=str, help="The domain name to process")
+
+    # Rand command
+    rand_parser = subparsers.add_parser("rand", help="Generate a random number")
+    rand_parser.add_argument("--min", type=int, default=0, help="Minimum value for random number")
+    rand_parser.add_argument("--max", type=int, default=100, help="Maximum value for random number")
+
+    # Dumb command - as requested by the issue
+    dumb_parser = subparsers.add_parser("dumb", help="A really dumb feature that prints a silly message.")
+
+    if len(sys.argv) == 1:
+        parser.print_help(sys.stderr)
+        sys.exit(1)
 
     args = parser.parse_args()
 
-    if args.target:
-        http_status = check_http_status(args.target, 80)
-        https_status = check_http_status(args.target, 443)
-        print(f"HTTP: {http_status}")
-        print(f"HTTPS: {https_status}")
-    elif args.action == "domain":
-        if not args.value:
-            print("Please provide a domain to resolve.")
-            sys.exit(1)
-        try:
-            ip_address = socket.gethostbyname(args.value)
-            print(f"The IP address of {args.value} is {ip_address}")
-        except socket.gaierror:
-            print(f"Could not resolve domain: {args.value}")
-            sys.exit(1)
+    if args.action == "domain":
+        print(f"Processing domain: {args.name.upper()}")
     elif args.action == "rand":
-        # This is a placeholder for random IP generation logic
-        # In a real scenario, you'd generate a random IP here.
-        print("Generating a random IP (not implemented yet).")
+        if args.min >= args.max:
+            print("Error: --min must be less than --max", file=sys.stderr)
+            sys.exit(1)
+        print(f"Generated random number: {random.randint(args.min, args.max)}")
+    elif args.action == "dumb":
+        print("This is a really dumb feature!")
     else:
-        parser.print_help()
+        # This case handles when an action is not specified but other args might be present
+        # or if an unknown action is passed. argparse handles unknown actions by default
+        # but this ensures a fallback for general help if 'action' is None due to some parsing edge case.
+        parser.print_help(sys.stderr)
+        sys.exit(1)
 
+if __name__ == "__main__":
+    main()
