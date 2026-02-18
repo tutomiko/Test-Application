@@ -1,48 +1,57 @@
-#!/usr/bin/env python3
-
 import argparse
 import socket
 import sys
-import random
 
-def print_greeting():
-    """Prints the greeting message."""
-    print("Hello user, what we scanning today?")
-
-def resolve_domain(domain_name: str) -> str:
-    """Resolves a domain name to an IP address."""
+def check_http_status(target: str, port: int) -> str:
+    """Checks if a service is running on the target host and port."""
     try:
-        ip_address = socket.gethostbyname(domain_name)
-        return ip_address
-    except socket.gaierror as e:
-        raise ValueError(f"Could not resolve domain '{domain_name}': {e}") from e
-
-def get_random_ip() -> str:
-    """Generates and returns a random IPv4 address."""
-    return f"{random.randint(0, 255)}.{random.randint(0, 255)}.{random.randint(0, 255)}.{random.randint(0, 255)}"
+        with socket.create_connection((target, port), timeout=2):
+            return "yarp"
+    except (socket.gaierror, socket.timeout, ConnectionRefusedError):
+        return "narp"
 
 def main():
-    """Main function for the CLI application."""
-    parser = argparse.ArgumentParser(description="CLI tool to resolve a domain name to an IP address or generate a random IP.")
-    parser.add_argument("domain", nargs='?', default=None, help="The domain name to resolve, or 'rand' for a random IP.")
+    parser = argparse.ArgumentParser(
+        description="A simple CLI tool for domain resolution and IP generation."
+    )
+    parser.add_argument(
+        "action",
+        nargs="?",
+        default="help",
+        help="Action to perform: domain (resolve domain), rand (generate random IP), or target (check service availability)."
+    )
+    parser.add_argument(
+        "value",
+        nargs="?",
+        help="Value for the action (e.g., domain name for 'domain' action, or target host for 'target' action)."
+    )
+    parser.add_argument(
+        "--target",
+        type=str,
+        help="Target host to check for HTTP/HTTPS service availability."
+    )
 
     args = parser.parse_args()
 
-    # Print the greeting message immediately upon execution
-    print_greeting()
+    if args.target:
+        http_status = check_http_status(args.target, 80)
+        https_status = check_http_status(args.target, 443)
+        print(f"HTTP: {http_status}")
+        print(f"HTTPS: {https_status}")
+    elif args.action == "domain":
+        if not args.value:
+            print("Please provide a domain to resolve.")
+            sys.exit(1)
+        try:
+            ip_address = socket.gethostbyname(args.value)
+            print(f"The IP address of {args.value} is {ip_address}")
+        except socket.gaierror:
+            print(f"Could not resolve domain: {args.value}")
+            sys.exit(1)
+    elif args.action == "rand":
+        # This is a placeholder for random IP generation logic
+        # In a real scenario, you'd generate a random IP here.
+        print("Generating a random IP (not implemented yet).")
+    else:
+        parser.print_help()
 
-    if args.domain is None:
-        # If no argument is provided, print help and exit
-        parser.print_help(sys.stderr)
-        sys.exit(1)
-
-    try:
-        if args.domain.lower() == "rand":
-            ip = get_random_ip()
-            print(ip)
-        else:
-            ip = resolve_domain(args.domain)
-            print(ip)
-    except ValueError as e:
-        print(f"Error: {e}", file=sys.stderr)
-        sys.exit(1)
