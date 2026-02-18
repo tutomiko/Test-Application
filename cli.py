@@ -5,6 +5,10 @@ import socket
 import sys
 import random
 
+def print_greeting():
+    """Prints the greeting message."""
+    print("Hello user, what we scanning today?")
+
 def resolve_domain(domain_name: str) -> str:
     """Resolves a domain name to an IP address."""
     try:
@@ -23,6 +27,9 @@ def main():
     parser.add_argument("domain", nargs='?', default=None, help="The domain name to resolve, or 'rand' for a random IP.")
 
     args = parser.parse_args()
+
+    # Print the greeting message immediately upon execution
+    print_greeting()
 
     if args.domain is None:
         # If no argument is provided, print help and exit
